@@ -1,22 +1,22 @@
-# NoLooking
+# NoLooksies
 Closes leagueclient when a game ends, so you can't see your lp gains or losses.
 
 Install:
-Go to releases on the right side of the screen, click on the highlighted NoLooking.zip file.
+Go to releases on the right side of the screen, click on the highlighted NoLooksies.zip file.
 Unzip the folder and place it somewhere on your pc.
+You can now start the .exe file inside
 
 Usage:
 When you start the app it becomes a tray icon so you can see it in the bottom right in your task bar.
+
 When you right click it it gives you 4 options:
-  
+ 
+Set Region - Shows a popup window where you can change your region (euw,na,eune,oce)
 
-Start - starts scanning for active games so it can terminate the client when they finish (enabled by default)
-  
+Set Summoner - Shows a popup window where you can change your summoner name
 
-Stop - stops scanning, useful for norms or games with friends so you can honor them and stuff
+Toggle program - Starts and stops the programs functionality, defaults to ON
   
-
-Bring to foreground - does what it says
+Quit - Quits program
   
-
-Exit - exits program (only way to close it, the red X when you bring it foreground will just minimize it) 
+There is also a file in the folder with the .exe file, called summoner_info.txt, this is where the program reads and writes your summoner information (name and region) to, so don't delte this. You can change your region and summoner name inside of the folder and the program will then use it after you restart (handy when your summoner name contains symbols that the pop-up window doesn't allow)
