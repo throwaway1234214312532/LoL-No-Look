@@ -13,7 +13,7 @@ When you right click it it gives you 4 options:
  
 Set Region - Shows a popup window where you can change your region (euw,na,eune,oce)
 
-Set Summoner - Shows a popup window where you can change your summoner name
+Set Summoner - Shows a popup window where you can change your summoner name (default is TH Krillin, jankos' summoner name)
 
 Toggle program - Starts and stops the programs functionality, defaults to ON
   
