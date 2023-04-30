@@ -9,16 +9,20 @@ import tkinter as tk
 import willump #if you want to import the class
 import asyncio
 import sys
-global exitflag
+import startup
+
+os.chdir(sys._MEIPASS)
+global exitflag, running, wllp, tray, status, startstatus
 exitflag = False
 running = True
-condition = threading.Condition()
-icon = Image.open("icon.png")
-global wllp
-global lp_data
-global tray
-global status
+icon = Image.open("Icon.png")
 status = "Status = On"
+if startup.is_running_at_startup("NoLooksies", True):
+    startstatus = "Start on Windows startup = On"
+else:
+    startstatus = "Start on Windows startup = Off"
+print (startup.is_running_at_startup("NoLooksies", True))
+
 def stop_client():
     client = None
     for p in psutil.process_iter(['pid', 'name']):
@@ -49,7 +53,6 @@ async def wllp_close():
 async def check_for_lp(data):
     print("data = ", data)
     print("data['data'] = ", data['data'])
-    global queueType
     global wllp
     global lp_data
     if running and data['data'] != None:
@@ -59,9 +62,9 @@ async def check_for_lp(data):
             stop_client()
 
 async def check_test(data):
-    global queueType
+
     global wllp
-    global lp_data, tray
+    global lp_data, tray, queueType
     print (data)
     queueType = data['data']['regalia']
     print (queueType[1],type(queueType))
@@ -116,11 +119,26 @@ def status_func():
 def add_to_tray(loop):
     global tray, status
     tray = pystray.Icon("Game Monitor", icon)
-    tray.menu = pystray.Menu(pystray.MenuItem(lambda text: status, status_func,enabled=False),pystray.MenuItem('Toggle Program', lambda : toggle_program(tray, loop)),pystray.MenuItem('Quit', lambda : quit(tray,loop)))
+    tray.menu = pystray.Menu(pystray.MenuItem(lambda text: status, status_func,enabled=False),pystray.MenuItem('Toggle Program', lambda : toggle_program(tray, loop)),pystray.MenuItem(lambda text: startstatus, on_start),pystray.MenuItem('Quit', lambda : quit(tray,loop)))
     tray.run()
 
 async def default_message_handler(data):
     pass
+
+
+def on_start():
+    global startstatus, tray
+    if not startup.is_running_at_startup("NoLooksies", True):
+        startup.run_at_startup_set("NoLooksiesTest",user=True)
+        startstatus = "Start on Windows startup = On"
+        tray.notify("NoLooksies now starting on windows startup!", "NoLooksies")
+        
+        pass
+    else:
+        startup.run_at_startup_remove("NoLooksies",True)
+        startstatus = "Start on Windows startup = Off"
+        tray.notify("NoLooksies no longer starting on windows startup!", "NoLooksies")
+    tray.update_menu()
 
 async def main():
     global wllp    
