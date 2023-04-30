@@ -156,7 +156,7 @@ async def main():
             try:
                 response = await wllp.request('get','/riotclient/app-name')
                 pass
-            except aiohttp.client_exceptions.ClientConnectorError:
+            except (aiohttp.client_exceptions.ClientConnectorError, aiohttp.client_exceptions.ClientOSError):
                 await wllp_close()
                 print("wllp has closed")
                 await wllp_start()
@@ -172,4 +172,4 @@ if __name__ == '__main__':
         asyncio.run(main())
     except KeyboardInterrupt:
         asyncio.run(wllp.close())
-        os._exit()        
+        os._exit(1)        
