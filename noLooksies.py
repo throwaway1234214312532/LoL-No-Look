@@ -9,7 +9,6 @@ import tkinter as tk
 import willump #if you want to import the class
 import asyncio
 import sys
-
 global exitflag
 exitflag = False
 running = True
@@ -79,9 +78,11 @@ def toggle_program(loop):
     if running:
         print("Turn off")
         running = False
-        coroutine = wllp.close()
-        loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,coroutine, loop)
-        print(wllp)
+        try:
+            coroutine = wllp.close()
+            loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,coroutine, loop)
+        except NameError as e:
+            print(e)
     else:
         print("back on!")
         running = True
@@ -95,11 +96,10 @@ def quit(tray, loop):
     try:
         loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,wllp.close(), loop)
     except NameError:
-        os._exit()
+        os._exit(1)
     tray.stop()
-    loop.stop()
     exitflag = True
-    os._exit()
+    os._exit(1)
 
 def add_to_tray(loop):
     tray = pystray.Icon("Game Monitor", icon)
@@ -130,6 +130,8 @@ async def main():
                 await wllp_close()
                 print("wllp has closed")
                 await wllp_start()
+            except RuntimeError:
+                pass
             print("waiting")
         await asyncio.sleep(8)
 
