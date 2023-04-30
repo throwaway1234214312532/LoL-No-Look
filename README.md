@@ -1,6 +1,8 @@
 # NoLooksies
 Closes leagueclient when a Solo/Duo ranked game ends, so you can't see your lp gains or losses.
 
+Perfect for those of us who let the LP get to our head and just want to focus on improvement!
+
 ## Install:
 Download the NoLooksies.exe file from the latest release!
 https://github.com/WoedWoef/NoLooksies/releases/tag/v2.0.0
