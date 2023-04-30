@@ -15,9 +15,10 @@ running = True
 condition = threading.Condition()
 icon = Image.open("icon.png")
 global wllp
-global queuetype
 global lp_data
-
+global tray
+global status
+status = "Status = On"
 def stop_client():
     client = None
     for p in psutil.process_iter(['pid', 'name']):
@@ -54,16 +55,17 @@ async def check_for_lp(data):
     if running and data['data'] != None:
         print(data['data']['queueType'])
         if data['data']['queueType'] == "RANKED_SOLO_5x5":
-            
+            tray.notify("League Client Closed!", "NoLooksies")
             stop_client()
 
 async def check_test(data):
     global queueType
     global wllp
-    global lp_data
+    global lp_data, tray
     print (data)
     queueType = data['data']['regalia']
     print (queueType[1],type(queueType))
+    tray.notify("League Client Closed!", "NoLooksies")
     lp_data = data
     print(queueType == 2)
     
@@ -72,11 +74,14 @@ async def check_test(data):
         stop_client()
 #Toggles functionality by inverting the Running value
 
-def toggle_program(loop):
-    global running, wllp
+def toggle_program(tray, loop):
+    global running, wllp, status
     print("toggled running to", not running)
     if running:
-        print("Turn off")
+        tray.remove_notification()
+        tray.notify("Functionality turned Off!", "Toggle")
+        status = "Status = Off"
+        tray.update_menu()
         running = False
         try:
             coroutine = wllp.close()
@@ -84,7 +89,10 @@ def toggle_program(loop):
         except NameError as e:
             print(e)
     else:
-        print("back on!")
+        tray.remove_notification()
+        tray.notify("Functionality turned back On!", "Toggle")
+        status = "Status = On"
+        tray.update_menu()
         running = True
         coroutine = wllp_start()
         loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,coroutine, loop)    
@@ -101,9 +109,14 @@ def quit(tray, loop):
     exitflag = True
     os._exit(1)
 
+def status_func():
+    global status
+    return status
+
 def add_to_tray(loop):
+    global tray, status
     tray = pystray.Icon("Game Monitor", icon)
-    tray.menu = pystray.Menu(pystray.MenuItem('Toggle Program', lambda : toggle_program(loop)),pystray.MenuItem('Quit', lambda : quit(tray,loop)))
+    tray.menu = pystray.Menu(pystray.MenuItem(lambda text: status, status_func,enabled=False),pystray.MenuItem('Toggle Program', lambda : toggle_program(tray, loop)),pystray.MenuItem('Quit', lambda : quit(tray,loop)))
     tray.run()
 
 async def default_message_handler(data):
@@ -111,7 +124,6 @@ async def default_message_handler(data):
 
 async def main():
     global wllp    
-    print(" hello")
     loop = asyncio.get_running_loop()
     
     tray_thread = threading.Thread(target=add_to_tray, args=(loop,))
