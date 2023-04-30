@@ -13,7 +13,7 @@ You can now start the NoLooksies.exe file!
 ## Usage:
 
 When you start the app it becomes a tray icon so you can see it in the bottom right in your task bar.
-The app will now check if u'r for the ending of a solo duo ranked game, if it finds one, it will shut down the client so that you cannot see the lp change, and you have to make a conscious decision to play another!
+The app will now check for the ending of a solo duo ranked game, if it finds one, it will shut down the client so that you cannot see the lp change, and you have to make a conscious decision to play another!
 The app will keep running and looking for new ranked games even when the client closes.
 
 
