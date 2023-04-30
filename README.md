@@ -49,5 +49,9 @@ Publisher: 76c9f72e-fa22-480a-930a-4e0ed44b9843
 SHA1 Hash: 52023E12B160504E4FA71605CF9A2682B04B9679
 
 Time stamp: Sun Apr 30 21:39:25 2023
+
+## Bugs:
+This was made in a relatively short time and has not been tested extensively, if a bug comes up, please contact me on discord: WoedWoef#6619
+
 ## License:
 NoLooksies is released under the [MIT license](LICENSE) so feel free to hit me up or make pullrequests if u see improvements to be made (i'm sure there are a lot).
