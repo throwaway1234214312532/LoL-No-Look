@@ -2,21 +2,24 @@
 Closes leagueclient when a game ends, so you can't see your lp gains or losses.
 
 Install:
-Go to releases on the right side of the screen, click on the highlighted NoLooksies.zip file.
-Unzip the folder and place it somewhere on your pc.
-You can now start the .exe file inside
+Download the NoLooksies.exe file from the pre-release(NOT the latest release, the pre-release):
+https://github.com/WoedWoef/NoLooksies/releases/tag/v2.0.0(test)
+
+Extract and place the folder inside somewhere on ur pc.
+You can now start the NoLooksies.exe file!
 
 Usage:
+
 When you start the app it becomes a tray icon so you can see it in the bottom right in your task bar.
+The app will now check if u'r for the ending of a solo duo ranked game, if it finds one, it will shut down the client so that you cannot see the lp change, and you have to make a conscious decision to play another!
 
-When you right click it it gives you 4 options:
- 
-Set Region - Shows a popup window where you can change your region (euw,na,eune,oce)
 
-Set Summoner - Shows a popup window where you can change your summoner name (default is TH Krillin, jankos' summoner name)
+
+Options:
 
 Toggle program - Starts and stops the programs functionality, defaults to ON
-  
+
+Start on windows startup = <On/Off> - click to toggle the application to start automatically when your pc starts, defaults to OFF
+
 Quit - Quits program
-  
-There is also a file in the folder with the .exe file, called summoner_info.txt, this is where the program reads and writes your summoner information (name and region) to, so don't delte this. You can change your region and summoner name inside of the folder and the program will then use it after you restart (handy when your summoner name contains symbols that the pop-up window doesn't allow)
+
