@@ -23,3 +23,10 @@ Start on windows startup = <On/Off> - click to toggle the application to start a
 
 Quit - Quits program
 
+
+
+If you get a windows smartscreen pop-up with: "Windows protected your PC
+Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk."
+Press more info and run anyway.
+This popup is given because my application is not signed by a CA, which would cost me a lot of money that i don't have. 
+It is signed and timestamped by me though, in the smartscreen popup the publisher should say: 76c9f72e-fa22-480a-930a-4e0ed44b9843 
