@@ -6,7 +6,7 @@ Download the NoLooksies.exe file from the pre-release(NOT the latest release, th
 https://github.com/WoedWoef/NoLooksies/releases/tag/v2.0.0(test)
 
 Extract and place the folder inside somewhere on ur pc.
-You can now start the NoLooksiesTest.exe file!
+You can now start the NoLooksies.exe file!
 
 Usage:
 
