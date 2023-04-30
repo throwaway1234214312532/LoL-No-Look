@@ -10,7 +10,7 @@ import willump #if you want to import the class
 import asyncio
 import sys
 import startup
-
+import time
 os.chdir(sys._MEIPASS)
 global exitflag, running, wllp, tray, status, startstatus
 exitflag = False
@@ -24,6 +24,7 @@ else:
 print (startup.is_running_at_startup("NoLooksies", True))
 
 def stop_client():
+    global running, tray
     client = None
     for p in psutil.process_iter(['pid', 'name']):
         if p.info['name'] == 'LeagueClient.exe':
@@ -32,6 +33,9 @@ def stop_client():
             break
     if client:
         client.terminate()
+    time.sleep(2)
+    tray.remove_notification()
+    running = True
 
 
 async def set_event_listener():
@@ -54,25 +58,21 @@ async def check_for_lp(data):
     print("data = ", data)
     print("data['data'] = ", data['data'])
     global wllp
-    global lp_data
+    global lp_data, running
     if running and data['data'] != None:
         print(data['data']['queueType'])
         if data['data']['queueType'] == "RANKED_SOLO_5x5":
+            running = False
             tray.notify("League Client Closed!", "NoLooksies")
             stop_client()
 
 async def check_test(data):
 
     global wllp
-    global lp_data, tray, queueType
-    print (data)
-    queueType = data['data']['regalia']
-    print (queueType[1],type(queueType))
-    tray.notify("League Client Closed!", "NoLooksies")
-    lp_data = data
-    print(queueType == 2)
-    
+    global tray, queueType
+    print (data)  
     if running:
+        tray.notify("League Client Closed!", "NoLooksies")
         print("got there")
         stop_client()
 #Toggles functionality by inverting the Running value
@@ -129,7 +129,7 @@ async def default_message_handler(data):
 def on_start():
     global startstatus, tray
     if not startup.is_running_at_startup("NoLooksies", True):
-        startup.run_at_startup_set("NoLooksiesTest",user=True)
+        startup.run_at_startup_set("NoLooksies",user=True)
         startstatus = "Start on Windows startup = On"
         tray.notify("NoLooksies now starting on windows startup!", "NoLooksies")
         
