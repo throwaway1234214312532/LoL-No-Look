@@ -4,6 +4,7 @@ Closes leagueclient when a game ends, so you can't see your lp gains or losses.
 Install:
 Download the NolooksiesTest.zip file from the pre-release(NOT the latest release, the pre-release):
 https://github.com/WoedWoef/NoLooksies/releases/tag/v2.0.0(test)
+
 Extract and place the folder inside somewhere on ur pc.
 You can now start the NoLooksies.exe file!
 
