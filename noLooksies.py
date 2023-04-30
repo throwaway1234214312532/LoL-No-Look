@@ -1,71 +1,24 @@
-import requests
-import time
+import aiohttp
+import os
+import logging
 import psutil
 import pystray
 import threading
 from PIL import Image
 import tkinter as tk
-import tkinter.simpledialog
+import willump #if you want to import the class
+import asyncio
+import sys
 
-REGION = None
-REGION_ID = None
-
-
-
-def input_to_region(region_input):
-    global REGION, REGION_ID
-    if region_input == "euw":
-        REGION = "europe"
-        REGION_ID = "EUW1"
-    elif region_input == "na":
-        REGION = "americas"
-        REGION_ID = "NA1"
-    elif region_input == "oce":
-        REGION = "Oceania"
-        REGION_ID = "OCE1"
-    elif region_input == "eune":
-        REGION = "EUROPE"
-        REGION_ID = "EUN1" 
-
-
-def read_summoner_info():
-    with open('summoner_info.txt', 'r') as f:
-        summoner_name, region = f.read().splitlines()
-        input_to_region(region)
-    return summoner_name
-
-SUMMONER_NAME = read_summoner_info()
-
-
-# The base URL for my API
-BASE_URL = "https://woedwoef.pythonanywhere.com/"
-
-def get_summoner_id():
-    return requests.get(f"{BASE_URL}summonerId/{SUMMONER_NAME}/{REGION_ID}").json()["id"]
-
-def get_active_game():
-    return requests.get(f"{BASE_URL}currentMatch/{SUMMONER_ID}/{REGION_ID}")
-
-def get_finished_game(matchId):
-    return requests.get(f"{BASE_URL}Match/{matchId}/{REGION}")
-  
-# Default name to get id from
-
-# The ID of the summoner you want to track
-SUMMONER_ID = get_summoner_id()
-print (SUMMONER_ID)
-
-def set_summoner_id():
-    global SUMMONER_ID
-    SUMMONER_ID = get_summoner_id()
-
-# Icon used for the tray icon
-icon = Image.open("icon.png")
-
-# Initial value for running
+global exitflag
+exitflag = False
 running = True
+condition = threading.Condition()
+icon = Image.open("icon.png")
+global wllp
+global queuetype
+global lp_data
 
-#function to stop client
 def stop_client():
     client = None
     for p in psutil.process_iter(['pid', 'name']):
@@ -77,122 +30,114 @@ def stop_client():
         client.terminate()
 
 
-def write_to_file(x,input):
-    with open("summoner_info.txt", "r") as f:
-        lines = f.readlines()
-    lines[x] = input + "\n"
-    with open("summoner_info.txt", "w") as f:
-        f.writelines(lines)
+async def set_event_listener():
+	#creates a subscription to the server event OnJsonApiEvent (which is all Json updates)
+    all_events_subscription = await wllp.subscribe('OnJsonApiEvent',default_handler=default_message_handler)
+	#let's add an endpoint filter, and print when we get messages from this endpoint with our printing listener
+    wllp.subscription_filter_endpoint(all_events_subscription, '/lol-ranked/v1/current-lp-change-notification', handler=check_for_lp)
+    #wllp.subscription_filter_endpoint(all_events_subscription, '/lol-summoner/v1/', handler=check_test)
 
-def monitor_league(quit_event, restart_event):
-    while True:
-        while running:
-            print(threading.current_thread().name)
-            # Make the API request to get the summoner's current game information
-            response = get_active_game()
-            print ("Is player in game? ",response)
-            print ("Summoner name = ", SUMMONER_NAME)
+
+async def wllp_start():
+    global wllp
+    wllp = await willump.start()
+    await set_event_listener()
+
+async def wllp_close():
+    await wllp.close()
+
+async def check_for_lp(data):
+    print("data = ", data)
+    print("data['data'] = ", data['data'])
+    global queueType
+    global wllp
+    global lp_data
+    if running and data['data'] != None:
+        print(data['data']['queueType'])
+        if data['data']['queueType'] == "RANKED_SOLO_5x5":
             
-            # Check if the summoner is currently in a game
-            if response.status_code == 200:
-                game_info = response.json()
-                print(game_info)
-                game_mode = game_info["gameMode"]
-                match_id = "{}_{}".format(REGION_ID,game_info["gameId"])
-                
-                print (match_id)
-                print("Summoner in game")
-                # Check if the game mode is Classic and the game has ended
-                if game_info["gameQueueConfigId"] == 420:
-                    while running:
-                        print("checking if game is ongoing")
-                        response = get_finished_game(match_id)
-                        print(response.status_code)
-                        if response.status_code == 200:
-                            stop_client()
-                            print("Terminated client because game ended")
-                            break
-                        else:
-                            time.sleep(1)   
-                        
+            stop_client()
 
-                # Wait 10 seconds before checking again
-                quit_event.wait(timeout=20)
-        
-            # If the summoner is not in a game, wait 10 seconds before checking again
-            else:
-                print("Summoner not in game")
-
-                quit_event.wait(timeout=20)
-        if quit_event.is_set():
-            break
-
-# Turns user input to usable region values
-   
-
-#Restarts the functionality by setting the running value to false and waiting 2 seconds before setting it to true.
-def restart():
-    global running
+async def check_test(data):
+    global queueType
+    global wllp
+    global lp_data
+    print (data)
+    queueType = data['data']['regalia']
+    print (queueType[1],type(queueType))
+    lp_data = data
+    print(queueType == 2)
+    
     if running:
-        running = False
-        restart_event.set()
-        time.sleep(2)
-        running = True
-        restart_event.clear()
-
+        print("got there")
+        stop_client()
 #Toggles functionality by inverting the Running value
-def toggle_program():
-    global running
+
+def toggle_program(loop):
+    global running, wllp
+    print("toggled running to", not running)
     if running:
+        print("Turn off")
         running = False
+        coroutine = wllp.close()
+        loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,coroutine, loop)
+        print(wllp)
     else:
+        print("back on!")
         running = True
+        coroutine = wllp_start()
+        loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,coroutine, loop)    
 
 #Quits program        
-def quit(tray):
-    global running
+def quit(tray, loop):
+    global running, wllp, exitflag
     running = False
-    quit_event.set()
+    try:
+        loop.call_soon_threadsafe(asyncio.run_coroutine_threadsafe,wllp.close(), loop)
+    except NameError:
+        os._exit()
     tray.stop()
+    loop.stop()
+    exitflag = True
+    os._exit()
 
-#Gets userinput for their region
-def set_region():
-    root = tk.Tk()
-    root.withdraw()
-    # create a simple dialog box to get the summoner name from the user
-    region_input = tkinter.simpledialog.askstring("REGION", "Enter your region (euw,na,eune,oce,etc...):")
-    input_to_region(region_input)
-    write_to_file(1,region_input)    
-    set_summoner_id()
-    restart()
-    
-
-
-#Gets userinput for their summonername
-def set_summoner():
-    global SUMMONER_NAME, running, SUMMONER_ID
-    root = tk.Tk()
-    root.withdraw()
-    # create a simple dialog box to get the summoner name from the user
-    SUMMONER_NAME = tkinter.simpledialog.askstring("Summoner Name", "Enter your summoner name:")
-    write_to_file(0,SUMMONER_NAME) 
-    set_summoner_id()
-    restart()
-
-
-#Function to add the system tray icon
-def add_to_tray():
+def add_to_tray(loop):
     tray = pystray.Icon("Game Monitor", icon)
-    tray.menu = pystray.Menu(pystray.MenuItem('Set Region', set_region), pystray.MenuItem('Set Summoner', set_summoner),pystray.MenuItem('Toggle Program', toggle_program),pystray.MenuItem('Quit', lambda : quit(tray)))
+    tray.menu = pystray.Menu(pystray.MenuItem('Toggle Program', lambda : toggle_program(loop)),pystray.MenuItem('Quit', lambda : quit(tray,loop)))
     tray.run()
 
+async def default_message_handler(data):
+    pass
 
-
-if __name__ == "__main__":
-    quit_event = threading.Event()
-    restart_event = threading.Event()
-    tray_thread = threading.Thread(target=add_to_tray)
-    program_thread = threading.Thread(target=monitor_league, args=(quit_event,restart_event,))
-    program_thread.start()
-    tray_thread.start()
+async def main():
+    global wllp    
+    print(" hello")
+    loop = asyncio.get_running_loop()
     
+    tray_thread = threading.Thread(target=add_to_tray, args=(loop,))
+    tray_thread.start()
+    wllp = await willump.start()
+        
+    await set_event_listener()
+    
+    while not exitflag:
+        print("waiting")
+        if running:
+            try:
+                response = await wllp.request('get','/riotclient/app-name')
+                pass
+            except aiohttp.client_exceptions.ClientConnectorError:
+                await wllp_close()
+                print("wllp has closed")
+                await wllp_start()
+            print("waiting")
+        await asyncio.sleep(8)
+
+if __name__ == '__main__':
+	# uncomment this line if you want to see willump complain (debug log)
+    logging.getLogger().setLevel(level=logging.DEBUG)
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        asyncio.run(wllp.close())
+        os._exit()        
