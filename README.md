@@ -3,7 +3,7 @@ Closes leagueclient when a Solo/Duo ranked game ends, so you can't see your lp g
 
 Perfect for those of us who let the LP get to our head and just want to focus on improvement!
 
-Based on the no look challenge made by Timmifer TM
+Based on the no look challenge invented by Timmifer :tm:
 
 Windows Only!!
 ## Install:
